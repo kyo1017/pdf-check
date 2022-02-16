@@ -1,9 +1,8 @@
 import os
 import re
-import awsgi
 import fitz
 from flask_cors import CORS
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, json, request
 
 UPLOAD_FOLDER = 'uploads'
 
@@ -29,7 +28,13 @@ def check():
             text = (' ').join(page.get_text().split())
             if len(re.findall(String.lower(), text.lower())) > 0:
                 num += len(re.findall(String.lower(), text.lower()))
-    return jsonify(message="success")
-
-def handler(event, context):
-    return awsgi.response(app, event, context)
+        data = {
+            'keyword': String,
+            'num': num
+        }
+        response = app.response_class(
+            response=json.dumps(data),
+            status=200,
+            mimetype='application/json'
+        )
+        return response
