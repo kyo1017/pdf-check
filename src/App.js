@@ -11,14 +11,21 @@ function App() {
   }
 
   const upload = () => {
-    const data = new FormData();
-    data.append('upload_file', file);
+    const formData = new FormData();
+    formData.append('upload_file', file);
     fetch('http://localhost:5000/check', {
       method: 'post',
-      body: data,
+      body: formData,
     }).then(res => res.json())
       .then(data => {
-        setCheckData(data);
+        let arr = []
+        for (let item in data) {
+          arr = [...arr, {
+            keyword: item,
+            num: data[item]
+          }];
+        }
+        setCheckData(arr);
       })
   }
 
@@ -32,7 +39,9 @@ function App() {
       </div>
       <div className='output-area'>
         {
-          checkData ? <p>Found {checkData.num} &lt;{checkData.keyword}&gt;</p> : null
+          checkData?.map((item, index)=>{
+            return <p key={index}>{item.num} &lt;{item.keyword}&gt;</p>;
+          })
         }
       </div>
     </div>

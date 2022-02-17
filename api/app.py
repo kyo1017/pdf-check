@@ -12,6 +12,10 @@ CORS(app)
 if not os.path.isdir(UPLOAD_FOLDER):
     os.mkdir(UPLOAD_FOLDER)
 
+txt = open("keywords.txt", "r", encoding="utf-8")
+keywords = txt.read().split("\n")
+txt.close()
+
 BASE_ROUTE = "/check"
 
 @app.route(BASE_ROUTE, methods=['POST'])
@@ -21,19 +25,18 @@ def check():
         filename = file.filename
         destination = "/".join([UPLOAD_FOLDER, filename])
         file.save(destination)
-        doc = fitz.open(filename)
-        String = "Deferred Revenue"
-        num = 0
+        doc = fitz.open(destination)
+        res = {}
         for page in doc:
             text = (' ').join(page.get_text().split())
-            if len(re.findall(String.lower(), text.lower())) > 0:
-                num += len(re.findall(String.lower(), text.lower()))
-        data = {
-            'keyword': String,
-            'num': num
-        }
+            for keyword in keywords:
+                num = len(re.findall(keyword.lower(), text.lower()))
+                if num > 0:
+                    if not keyword in res:
+                        res[keyword] = 0
+                    res[keyword] += num
         response = app.response_class(
-            response=json.dumps(data),
+            response=json.dumps(res),
             status=200,
             mimetype='application/json'
         )
